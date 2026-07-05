@@ -1,11 +1,11 @@
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
 import { Team } from '@/lib/db/schema';
+import { getCurrentUser } from '@/lib/auth/auth-service';
 import {
-  getTeamByStripeCustomerId,
-  getUser,
+  findTeamByStripeCustomerId,
   updateTeamSubscription
-} from '@/lib/db/queries';
+} from '@/lib/db/repositories/team-repository';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil'
@@ -18,7 +18,7 @@ export async function createCheckoutSession({
   team: Team | null;
   priceId: string;
 }) {
-  const user = await getUser();
+  const user = await getCurrentUser();
 
   if (!team || !user) {
     redirect(`/sign-up?redirect=checkout&priceId=${priceId}`);
@@ -121,7 +121,7 @@ export async function handleSubscriptionChange(
   const subscriptionId = subscription.id;
   const status = subscription.status;
 
-  const team = await getTeamByStripeCustomerId(customerId);
+  const team = await findTeamByStripeCustomerId(customerId);
 
   if (!team) {
     console.error('Team not found for Stripe customer:', customerId);

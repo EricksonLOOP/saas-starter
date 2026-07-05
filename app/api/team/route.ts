@@ -1,6 +1,6 @@
-import { getTeamForUser } from '@/lib/db/queries';
+import { getTeamForCurrentUser } from '@/lib/teams/team-service';
 
 export async function GET() {
-  const team = await getTeamForUser();
+  const team = await getTeamForCurrentUser();
   return Response.json(team);
 }

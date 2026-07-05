@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { TeamDataWithMembers, User } from '@/lib/db/schema';
-import { getTeamForUser, getUser } from '@/lib/db/queries';
+import { getCurrentUser } from '@/lib/auth/auth-service';
+import { getTeamForCurrentUser } from '@/lib/teams/team-service';
 import { redirect } from 'next/navigation';
 
 export type ActionState = {
@@ -39,7 +40,7 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
   action: ValidatedActionWithUserFunction<S, T>
 ) {
   return async (prevState: ActionState, formData: FormData) => {
-    const user = await getUser();
+    const user = await getCurrentUser();
     if (!user) {
       throw new Error('User is not authenticated');
     }
@@ -60,12 +61,12 @@ type ActionWithTeamFunction<T> = (
 
 export function withTeam<T>(action: ActionWithTeamFunction<T>) {
   return async (formData: FormData): Promise<T> => {
-    const user = await getUser();
+    const user = await getCurrentUser();
     if (!user) {
       redirect('/sign-in');
     }
 
-    const team = await getTeamForUser();
+    const team = await getTeamForCurrentUser();
     if (!team) {
       throw new Error('Team not found');
     }
